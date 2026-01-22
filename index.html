@@ -1,147 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Urban Guard | Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>Urban Guard | Cloud Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
-  <style>
-    body { font-family: Inter, system-ui, sans-serif; }
-    .hidden { display: none !important; }
-    .tab-active { border-left: 4px solid #3b82f6; background:#1e293b; color:white }
-  </style>
+<style>
+  body { font-family: Inter, system-ui, sans-serif; }
+  .hidden { display: none !important; }
+  .tab-active { border-left:4px solid #3b82f6; background:#1e293b; color:white }
+</style>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
 
-<!-- LOGIN / RESET -->
-<div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 hidden flex items-center justify-center">
-  <div class="bg-white p-8 rounded-3xl w-full max-w-md text-center shadow-xl">
-    <h1 class="text-2xl font-black mb-2">Urban Guard Admin</h1>
-    <p class="text-slate-400 text-sm mb-6">Secure Hardware Management</p>
+<!-- LOADER -->
+<div id="loader" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-[200]">
+  <div class="animate-pulse text-white font-black text-xl">Loading Admin…</div>
+</div>
 
-    <form id="loginForm" class="space-y-4">
-      <input id="loginEmail" type="email" placeholder="Email" required class="w-full p-3 border rounded-xl">
-      <input id="loginPass" type="password" placeholder="Password" required class="w-full p-3 border rounded-xl">
-      <button class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold">SIGN IN</button>
+<!-- LOGIN -->
+<div id="login-screen" class="fixed inset-0 bg-slate-900 z-[100] hidden flex items-center justify-center p-6">
+  <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md text-center">
+    <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-lock text-white text-2xl"></i>
+    </div>
+    <h1 class="text-2xl font-black mb-2">Urban Guard Admin</h1>
+    <p class="text-slate-400 text-sm mb-8">Secure Hardware Management</p>
+
+    <form id="loginForm" class="space-y-4 text-left">
+      <input id="loginEmail" type="email" placeholder="Email Address" required class="w-full p-4 border rounded-xl">
+      <input id="loginPass" type="password" placeholder="Password" required class="w-full p-4 border rounded-xl">
+      <button class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold">SIGN IN</button>
     </form>
 
-    <button onclick="sendResetEmail()" class="mt-4 text-xs font-bold text-slate-400 uppercase">
-      Forgot password?
+    <button id="forgotBtn" class="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+      Forgot Password?
     </button>
 
-    <div id="reset-box" class="hidden mt-6 border-t pt-4">
-      <p class="text-xs font-bold text-blue-600 uppercase mb-2">Reset Password</p>
-      <input id="newPass" type="password" placeholder="New password" class="w-full p-3 border rounded-xl mb-2">
-      <button onclick="updatePassword()" class="w-full py-3 bg-green-600 text-white rounded-xl font-bold">
+    <div id="reset-box" class="hidden mt-6 pt-4 border-t text-left">
+      <p class="text-xs font-bold text-blue-600 uppercase mb-2">Create New Password</p>
+      <input id="newPass" type="password" placeholder="New Password" class="w-full p-3 border rounded-lg mb-2">
+      <button id="savePass" class="w-full py-3 bg-green-600 text-white rounded-lg font-bold">
         Save New Password
       </button>
     </div>
   </div>
 </div>
 
-<!-- ADMIN -->
-<aside id="admin-sidebar" class="hidden fixed w-72 h-full bg-slate-900 text-white">
-  <div class="p-5 border-b flex justify-between">
-    <span class="font-black text-blue-400">ADMIN</span>
-    <button onclick="logout()"><i class="fas fa-power-off"></i></button>
+<!-- SIDEBAR -->
+<aside id="admin-sidebar" class="w-72 bg-slate-900 text-white fixed h-full z-20 shadow-2xl hidden">
+  <div class="p-6 border-b border-slate-800 flex justify-between">
+    <span class="text-lg font-black text-blue-400">ADMIN PANEL</span>
+    <button id="logoutBtn"><i class="fas fa-power-off"></i></button>
   </div>
+  <nav class="flex-1 p-4 space-y-2">
+    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full p-3 rounded-lg tab-active">Dashboard</button>
+    <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full p-3 rounded-lg">Inventory</button>
+    <button onclick="switchTab('inquiries')" id="nav-inquiries" class="w-full p-3 rounded-lg">Inquiries</button>
+    <button onclick="switchTab('preview')" id="nav-preview" class="w-full p-3 rounded-lg">Store View</button>
+  </nav>
 </aside>
 
-<main id="main-content" class="hidden ml-72 p-8">
-  <h2 class="font-black text-xl">Dashboard</h2>
-  <p class="text-slate-500">You are logged in.</p>
+<!-- MAIN -->
+<main id="main-content" class="ml-72 flex-1 flex flex-col hidden">
+  <header class="h-16 bg-white border-b flex items-center justify-between px-8">
+    <h2 id="tab-title" class="font-bold">DASHBOARD</h2>
+  </header>
+
+  <section id="tab-dashboard" class="p-8 tab-content">
+    <div class="grid grid-cols-3 gap-6">
+      <div class="bg-white p-6 rounded-2xl border">
+        <p class="text-xs uppercase text-slate-400 font-bold">Live SKUs</p>
+        <h3 id="stat-count" class="text-3xl font-black">0</h3>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border">
+        <p class="text-xs uppercase text-slate-400 font-bold">Database</p>
+        <h3 class="text-3xl font-black text-green-500">LIVE</h3>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border">
+        <p class="text-xs uppercase text-slate-400 font-bold">Alerts</p>
+        <h3 id="stat-inq" class="text-3xl font-black text-blue-500">0</h3>
+      </div>
+    </div>
+  </section>
 </main>
 
-<script>
-/* ---------------- CONFIG ---------------- */
-const supabase = window.supabase.createClient(
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+/* ---------- CONFIG ---------- */
+const supabase = createClient(
   "https://oojkvzgsamewgibmwhpu.supabase.co",
   "YOUR_ANON_KEY"
 );
 
-/* --------------- BOOTSTRAP --------------- */
+/* ---------- ELEMENTS ---------- */
+const loader = document.getElementById('loader');
 const loginScreen = document.getElementById('login-screen');
-const resetBox    = document.getElementById('reset-box');
-const loginForm   = document.getElementById('loginForm');
-const sidebar     = document.getElementById('admin-sidebar');
-const main        = document.getElementById('main-content');
+const sidebar = document.getElementById('admin-sidebar');
+const main = document.getElementById('main-content');
+const resetBox = document.getElementById('reset-box');
 
-/* Hide everything immediately */
-loginScreen.classList.add('hidden');
-sidebar.classList.add('hidden');
-main.classList.add('hidden');
-
-/* Handle recovery BEFORE auth logic */
-const isRecovery = window.location.hash.includes('type=recovery');
-if (isRecovery) {
-  loginScreen.classList.remove('hidden');
-  loginForm.classList.add('hidden');
-  resetBox.classList.remove('hidden');
-}
-
-/* Initial auth check (CRITICAL) */
-(async function initAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (session && !isRecovery) {
-    showAdmin();
-  } else if (!isRecovery) {
-    showLogin();
-  }
-})();
-
-/* Auth listener (NO redirects here) */
-supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN') showAdmin();
-  if (event === 'SIGNED_OUT') showLogin();
-});
-
-/* ---------------- UI ---------------- */
+/* ---------- UI ---------- */
 function showLogin() {
   loginScreen.classList.remove('hidden');
   sidebar.classList.add('hidden');
   main.classList.add('hidden');
 }
-
 function showAdmin() {
   loginScreen.classList.add('hidden');
   sidebar.classList.remove('hidden');
   main.classList.remove('hidden');
 }
+function hideLoader() {
+  loader.classList.add('hidden');
+}
 
-/* --------------- AUTH ---------------- */
-loginForm.addEventListener('submit', async e => {
+/* ---------- ROLE CHECK ---------- */
+async function enforceAdmin(session) {
+  const { data } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!data || data.role !== 'admin') {
+    await supabase.auth.signOut();
+    alert("Access denied");
+    showLogin();
+    return false;
+  }
+  return true;
+}
+
+/* ---------- BOOTSTRAP ---------- */
+const isRecovery = location.hash.includes('type=recovery');
+
+if (isRecovery) {
+  showLogin();
+  resetBox.classList.remove('hidden');
+  hideLoader();
+} else {
+  const { data:{session} } = await supabase.auth.getSession();
+  if (session && await enforceAdmin(session)) {
+    showAdmin();
+  } else {
+    showLogin();
+  }
+  hideLoader();
+}
+
+/* ---------- AUTH ---------- */
+loginForm.onsubmit = async e => {
   e.preventDefault();
-  const email = loginEmail.value;
-  const password = loginPass.value;
-
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) alert(error.message);
-});
-
-async function sendResetEmail() {
-  if (!loginEmail.value) return alert("Enter email first");
-  await supabase.auth.resetPasswordForEmail(loginEmail.value, {
-    redirectTo: window.location.href
+  const { error } = await supabase.auth.signInWithPassword({
+    email: loginEmail.value,
+    password: loginPass.value
   });
-  alert("Reset email sent");
-}
+  if (error) alert(error.message);
+};
 
-async function updatePassword() {
-  const { error } = await supabase.auth.updateUser({ password: newPass.value });
-  if (error) return alert(error.message);
-  window.location.hash = '';
-  location.reload();
-}
+forgotBtn.onclick = async () => {
+  await supabase.auth.resetPasswordForEmail(loginEmail.value, {
+    redirectTo: location.href
+  });
+  alert("Password reset email sent");
+};
 
-async function logout() {
+savePass.onclick = async () => {
+  if (newPass.value.length < 10) return alert("Password too short");
+  await supabase.auth.updateUser({ password: newPass.value });
   await supabase.auth.signOut();
-}
+  location.href = location.pathname;
+};
+
+logoutBtn.onclick = async () => {
+  await supabase.auth.signOut();
+  location.reload();
+};
+
+/* ---------- NAV ---------- */
+window.switchTab = id => {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+  document.getElementById('tab-' + id)?.classList.remove('hidden');
+  document.getElementById('tab-title').innerText = id.toUpperCase();
+};
 </script>
 </body>
 </html>
