@@ -239,7 +239,25 @@
 
         function toggleModal(s) { document.getElementById('uploadModal').classList.toggle('hidden', !s); }
         document.getElementById('productForm').addEventListener('submit', addProduct);
+        async function forgotPassword() {
+    const email = document.getElementById('loginEmail').value;
+    if (!email) {
+        alert("Please enter your email address first.");
+        return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.href, // This sends you back to your Urban Guard page
+    });
+
+    if (error) {
+        alert("Error: " + error.message);
+    } else {
+        alert("Password reset email sent! Check your inbox.");
+    }
+}
     </script>
 </body>
 </html>
+
 
