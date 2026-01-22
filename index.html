@@ -104,6 +104,13 @@ const loginScreen = document.getElementById('login-screen');
 const sidebar = document.getElementById('admin-sidebar');
 const main = document.getElementById('main-content');
 const resetBox = document.getElementById('reset-box');
+/* ---------- FORM ELEMENTS ---------- */
+const loginForm = document.getElementById('loginForm');
+const loginEmail = document.getElementById('loginEmail');
+const loginPass = document.getElementById('loginPass');
+const forgotBtn = document.getElementById('forgotBtn');
+const savePass = document.getElementById('savePass');
+const logoutBtn = document.getElementById('logoutBtn');
 
 /* ---------- UI ---------- */
 function showLogin() {
@@ -157,12 +164,23 @@ if (isRecovery) {
 /* ---------- AUTH ---------- */
 loginForm.onsubmit = async e => {
   e.preventDefault();
-  const { error } = await supabase.auth.signInWithPassword({
+
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: loginEmail.value,
     password: loginPass.value
   });
-  if (error) alert(error.message);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  // Check role and show admin
+  if (await enforceAdmin(data.session)) {
+    showAdmin();
+  }
 };
+
 
 forgotBtn.onclick = async () => {
   await supabase.auth.resetPasswordForEmail(loginEmail.value, {
@@ -192,4 +210,5 @@ window.switchTab = id => {
 </script>
 </body>
 </html>
+
 
