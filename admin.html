@@ -107,17 +107,23 @@
         </form>
     </div>
 
-    <script>
-        // --- CONFIGURATION: PASTE YOUR KEYS BELOW ---
+    // --- CONFIGURATION ---
         const SB_URL = "https://oojkvzgsamewgibmwhpu.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vamt2emdzYW1ld2dpYm13aHB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxMDI2NjYsImV4cCI6MjA4NDY3ODY2Nn0.chP_oQU3_5SP0mA3XmkqvYv1Mw5HMEkxTrLtbHPvmbU";
-        // --------------------------------------------
-
+        
         const supabase = window.supabase.createClient(SB_URL, SB_KEY);
         let products = [];
         let inquiries = [];
 
-        // AUTH HANDLER
+        // 1. SESSION LISTENER (The fix for your Magic Link and Login)
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' || session) {
+                showAdmin();
+                fetchData();
+            }
+        });
+
+        // 2. AUTH HANDLER
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const { data, error } = await supabase.auth.signInWithPassword({
@@ -125,7 +131,7 @@
                 password: document.getElementById('loginPass').value,
             });
             if (error) alert("Invalid Admin Login: " + error.message);
-            else { showAdmin(); fetchData(); }
+            // Success is handled by the onAuthStateChange listener above
         });
 
         async function logout() { await supabase.auth.signOut(); location.reload(); }
@@ -134,6 +140,7 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('admin-sidebar').classList.remove('hidden');
             document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('public-view').classList.add('hidden');
         }
 
         function togglePublicView() {
@@ -142,7 +149,7 @@
             fetchData();
         }
 
-        // DATA HANDLER
+        // 3. DATA HANDLER
         async function fetchData() {
             const { data: pData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
             const { data: iData } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false });
@@ -184,9 +191,22 @@
             document.getElementById('stat-count').innerText = products.length;
             document.getElementById('stat-inq').innerText = inquiries.length;
 
-            const inventoryHtml = products.map(p => `<tr class="hover:bg-slate-50"><td class="p-4 font-bold text-slate-800">${p.name}</td><td class="p-4 text-slate-400 font-bold text-[10px]">${p.brand}</td><td class="p-4 font-bold text-blue-600">$${p.price}</td><td class="p-4 text-right"><button onclick="deleteItem(${p.id})" class="text-red-300 hover:text-red-600"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
+            const inventoryHtml = products.map(p => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-4 font-bold text-slate-800">${p.name}</td>
+                    <td class="p-4 text-slate-400 font-bold text-[10px]">${p.brand}</td>
+                    <td class="p-4 font-bold text-blue-600">$${p.price}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteItem(${p.id})" class="text-red-300 hover:text-red-600"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`).join('');
+            
             document.getElementById('inventory-list').innerHTML = inventoryHtml;
-            document.getElementById('recent-list').innerHTML = products.slice(0, 5).map(p => `<tr class="p-4 border-b"><td><div class="p-4"><b>${p.brand}</b> ${p.name}</div></td><td class="text-right p-4 text-xs text-slate-400">${new Date(p.created_at).toLocaleDateString()}</td></tr>`).join('');
+            document.getElementById('recent-list').innerHTML = products.slice(0, 5).map(p => `
+                <tr class="p-4 border-b">
+                    <td><div class="p-4"><b>${p.brand}</b> ${p.name}</div></td>
+                    <td class="text-right p-4 text-xs text-slate-400">${new Date(p.created_at).toLocaleDateString()}</td>
+                </tr>`).join('');
 
             const storeHtml = products.map(p => `
                 <div class="bg-white border p-6 rounded-3xl shadow-sm hover:shadow-xl transition relative">
@@ -209,8 +229,7 @@
                 <div class="bg-white p-5 rounded-2xl border flex justify-between items-center">
                     <div><h4 class="font-black">${i.product_name}</h4><p class="text-sm text-slate-500">${i.customer_name} | ${i.customer_phone}</p></div>
                     <div class="text-[10px] text-slate-300">${new Date(i.created_at).toLocaleString()}</div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
         function switchTab(id) {
@@ -223,10 +242,7 @@
 
         function toggleModal(s) { document.getElementById('uploadModal').classList.toggle('hidden', !s); }
         document.getElementById('productForm').addEventListener('submit', addProduct);
-        
-        // Initial Check
-        supabase.auth.getSession().then(({ data }) => { if (data.session) showAdmin(); fetchData(); });
-    </script>
 </body>
 </html>
+
         
