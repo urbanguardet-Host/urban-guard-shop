@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urban Guard | Final Fix v5.1</title>
+    <title>Urban Guard | Master Admin v6.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -16,75 +16,105 @@
 <body class="bg-gray-100 flex min-h-screen text-slate-800">
 
     <div id="login-screen" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-6">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
-            <div class="text-center mb-8">
-                <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-shield-alt text-white text-3xl"></i>
-                </div>
-                <h1 class="text-2xl font-black">Urban Guard Admin</h1>
+        <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md text-center">
+            <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl">
+                <i class="fas fa-lock text-white text-2xl"></i>
             </div>
+            <h1 class="text-2xl font-black mb-2">Urban Guard Admin</h1>
+            <p class="text-slate-400 text-sm mb-8">Secure Hardware Management</p>
             
-            <form id="loginForm" class="space-y-4">
-                <input type="email" id="loginEmail" placeholder="Admin Email" required class="w-full p-4 border rounded-xl outline-none">
-                <input type="password" id="loginPass" placeholder="Password" required class="w-full p-4 border rounded-xl outline-none">
-                <button type="submit" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold">Log In</button>
-                <button type="button" onclick="forgotPassword()" class="w-full mt-2 text-[10px] font-bold text-slate-400 uppercase">Forgot Password?</button>
+            <form id="loginForm" class="space-y-4 text-left">
+                <input type="email" id="loginEmail" placeholder="Email Address" required class="w-full p-4 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="password" id="loginPass" placeholder="Password" required class="w-full p-4 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition">SIGN IN</button>
             </form>
 
-            <div id="reset-password-box" class="hidden mt-6 pt-6 border-t">
-                <p class="text-xs font-bold text-blue-600 mb-2 uppercase text-center">New Password Required</p>
-                <input type="password" id="newPass" placeholder="Enter New Password" class="w-full p-4 border rounded-xl outline-none mb-2">
-                <button onclick="updatePassword()" class="w-full py-4 bg-green-600 text-white rounded-xl font-bold">Update & Log In</button>
+            <button type="button" onclick="sendResetEmail()" class="w-full mt-3 text-[10px] font-bold text-slate-400 hover:text-blue-600 uppercase tracking-widest">
+                Forgot Password?
+            </button>
+            
+            <div id="update-pass-box" class="hidden mt-6 pt-6 border-t text-left">
+                <p class="text-xs font-bold text-blue-600 mb-2 uppercase">Create New Password</p>
+                <input type="password" id="newPass" placeholder="New Password" class="w-full p-3 border rounded-lg mb-2">
+                <button onclick="updateUserPassword()" class="w-full py-3 bg-green-600 text-white rounded-lg font-bold">Save New Password</button>
             </div>
 
-            <button onclick="togglePublicView()" class="w-full mt-4 text-slate-400 text-xs font-bold uppercase underline">View Public Storefront</button>
+            <button onclick="togglePublicView()" class="mt-6 text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-blue-600 transition block mx-auto">Skip to Public Storefront</button>
         </div>
     </div>
 
-    <aside id="admin-sidebar" class="w-72 bg-slate-900 text-white flex flex-col fixed h-full z-20 hidden">
+    <aside id="admin-sidebar" class="w-72 bg-slate-900 text-white flex flex-col fixed h-full z-20 shadow-2xl hidden">
         <div class="p-6 border-b border-slate-800 flex items-center justify-between">
-            <span class="text-xl font-bold text-blue-400">Admin Pro</span>
-            <button onclick="logout()" class="text-slate-500 hover:text-red-400"><i class="fas fa-power-off"></i></button>
+            <span class="text-lg font-black text-blue-400">ADMIN PANEL</span>
+            <button onclick="logout()" class="text-slate-500 hover:text-red-500 transition"><i class="fas fa-power-off"></i></button>
         </div>
         <nav class="flex-1 p-4 space-y-2">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 p-3 rounded-lg tab-active"><i class="fas fa-chart-line"></i><span>Dashboard</span></button>
-            <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 p-3 rounded-lg text-slate-400"><i class="fas fa-boxes"></i><span>Inventory</span></button>
-            <button onclick="switchTab('inquiries')" id="nav-inquiries" class="w-full flex items-center space-x-3 p-3 rounded-lg text-slate-400"><i class="fas fa-envelope"></i><span>Inquiries</span></button>
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 p-3 rounded-lg text-slate-400 tab-active"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></button>
+            <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 p-3 rounded-lg text-slate-400"><i class="fas fa-boxes w-5"></i><span>Inventory</span></button>
+            <button onclick="switchTab('inquiries')" id="nav-inquiries" class="w-full flex items-center space-x-3 p-3 rounded-lg text-slate-400"><i class="fas fa-bell w-5"></i><span>Inquiries</span></button>
+            <button onclick="switchTab('preview')" id="nav-preview" class="w-full flex items-center space-x-3 p-3 rounded-lg text-slate-400"><i class="fas fa-desktop w-5"></i><span>Store View</span></button>
         </nav>
     </aside>
 
     <main id="main-content" class="ml-72 flex-1 flex flex-col hidden">
-        <header class="h-16 bg-white border-b flex items-center justify-between px-8">
-            <h2 id="tab-title" class="font-bold text-blue-600 uppercase text-xs">Dashboard</h2>
-            <button onclick="toggleModal(true)" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm">+ Add Hardware</button>
+        <header class="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-10">
+            <h2 id="tab-title" class="font-bold text-slate-800">DASHBOARD</h2>
+            <button onclick="toggleModal(true)" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-bold text-sm shadow-lg shadow-blue-100">+ Add Hardware</button>
         </header>
+
         <section id="tab-dashboard" class="p-8 tab-content">
-            <div class="grid grid-cols-2 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl border"><p class="text-xs font-bold text-slate-400">SKUs</p><h3 id="stat-count" class="text-3xl font-black">0</h3></div>
-                <div class="bg-white p-6 rounded-xl border"><p class="text-xs font-bold text-slate-400">STATUS</p><h3 class="text-3xl font-black text-green-500">LIVE</h3></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl border shadow-sm"><p class="text-xs font-bold text-slate-400 uppercase">Live SKUs</p><h3 id="stat-count" class="text-3xl font-black">0</h3></div>
+                <div class="bg-white p-6 rounded-2xl border shadow-sm"><p class="text-xs font-bold text-slate-400 uppercase">Database</p><h3 class="text-3xl font-black text-green-500">LIVE</h3></div>
+                <div class="bg-white p-6 rounded-2xl border shadow-sm"><p class="text-xs font-bold text-slate-400 uppercase">Alerts</p><h3 id="stat-inq" class="text-3xl font-black text-blue-500">0</h3></div>
             </div>
-            <div class="bg-white rounded-xl border overflow-hidden"><table class="w-full text-left text-sm"><tbody id="recent-list" class="divide-y"></tbody></table></div>
+            <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                <div class="p-5 border-b font-bold bg-slate-50 text-slate-700">Recent Inventory Changes</div>
+                <table class="w-full text-left text-sm"><tbody id="recent-list" class="divide-y"></tbody></table>
+            </div>
         </section>
+
         <section id="tab-inventory" class="p-8 tab-content hidden">
-            <div class="bg-white rounded-xl border overflow-hidden"><table class="w-full text-sm"><tbody id="inventory-list" class="divide-y"></tbody></table></div>
+            <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 border-b">
+                        <tr><th class="p-4">Product Name</th><th class="p-4">Brand</th><th class="p-4">Price</th><th class="p-4 text-right">Delete</th></tr>
+                    </thead>
+                    <tbody id="inventory-list" class="divide-y"></tbody>
+                </table>
+            </div>
         </section>
-        <section id="tab-inquiries" class="p-8 tab-content hidden"><div id="inquiry-list" class="space-y-4"></div></section>
+
+        <section id="tab-inquiries" class="p-8 tab-content hidden"><div id="inquiry-list" class="grid gap-4"></div></section>
+
+        <section id="tab-preview" class="p-8 tab-content hidden bg-slate-50 min-h-screen">
+            <div id="admin-store-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto"></div>
+        </section>
     </main>
 
-    <div id="public-view" class="w-full bg-slate-50 min-h-screen p-8 hidden">
-        <div class="max-w-6xl mx-auto flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-black">URBAN GUARD STORE</h1>
-            <button onclick="location.reload()" class="text-xs font-bold text-blue-600">ADMIN LOGIN</button>
+    <div id="public-view" class="w-full bg-slate-100 min-h-screen p-8 hidden flex flex-col items-center">
+        <div class="w-full max-w-6xl">
+            <div class="flex justify-between items-center mb-10">
+                <h1 class="text-3xl font-black text-slate-900 tracking-tighter">URBAN GUARD STORE</h1>
+                <button onclick="location.reload()" class="bg-slate-900 text-white text-[10px] px-4 py-2 rounded-lg font-bold">ADMIN LOGIN</button>
+            </div>
+            <div id="public-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
         </div>
-        <div id="public-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
     </div>
 
-    <div id="uploadModal" class="hidden fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
-        <form id="productForm" class="bg-white rounded-2xl w-full max-w-md p-8 space-y-4">
-            <input type="text" id="pName" placeholder="Model Name" required class="w-full p-3 border rounded-lg">
-            <input type="number" id="pPrice" placeholder="Price" required class="w-full p-3 border rounded-lg">
-            <button type="submit" class="w-full py-4 bg-blue-600 text-white rounded-lg font-bold">PUSH DATA</button>
-            <button type="button" onclick="toggleModal(false)" class="w-full text-slate-400 text-xs">Cancel</button>
+    <div id="uploadModal" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <form id="productForm" class="bg-white rounded-3xl w-full max-w-md p-8 space-y-4">
+            <h3 class="text-xl font-bold border-b pb-4">Cloud Hardware Entry</h3>
+            <input type="text" id="pName" placeholder="Model (e.g. Cisco C9200)" required class="w-full p-3 border rounded-xl outline-none">
+            <div class="grid grid-cols-2 gap-4">
+                <select id="pBrand" class="p-3 border rounded-xl bg-white"><option>Cisco</option><option>TP-Link</option><option>Hikvision</option><option>eScan</option></select>
+                <select id="pCategory" class="p-3 border rounded-xl bg-white"><option>Routers</option><option>Switches</option><option>IP Cameras</option><option>AntiMalware</option></select>
+            </div>
+            <input type="number" id="pPrice" placeholder="Price ($)" step="0.01" required class="w-full p-3 border rounded-xl outline-none">
+            <div class="flex gap-2 pt-4">
+                <button type="button" onclick="toggleModal(false)" class="flex-1 py-3 bg-slate-100 rounded-xl font-bold">Cancel</button>
+                <button type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Push to Cloud</button>
+            </div>
         </form>
     </div>
 
@@ -92,38 +122,67 @@
         const SB_URL = "https://oojkvzgsamewgibmwhpu.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vamt2emdzYW1ld2dpYm13aHB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxMDI2NjYsImV4cCI6MjA4NDY3ODY2Nn0.chP_oQU3_5SP0mA3XmkqvYv1Mw5HMEkxTrLtbHPvmbU";
         const supabase = window.supabase.createClient(SB_URL, SB_KEY);
+        
+        let products = [];
+        let inquiries = [];
 
-        // --- AUTH LOGIC ---
+        // --- AUTHENTICATION & STARTUP ---
+        
+        // 1. Check for Password Reset Hash from Email
+        if (window.location.hash.includes('type=recovery')) {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('update-pass-box').classList.remove('hidden');
+        }
+
+        // 2. Auth State Listener
         supabase.auth.onAuthStateChange((event, session) => {
-            if (session) showAdmin();
+            if (session) {
+                showAdmin();
+            }
         });
 
-        async function forgotPassword() {
-            const email = document.getElementById('loginEmail').value;
-            if (!email) { alert("Type email first"); return; }
-            await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
-            alert("Email sent!");
-        }
-
-        async function updatePassword() {
-            const newPassword = document.getElementById('newPass').value;
-            const { error } = await supabase.auth.updateUser({ password: newPassword });
-            if (error) alert(error.message); else { alert("Success!"); location.reload(); }
-        }
-
+        // 3. Login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const { error } = await supabase.auth.signInWithPassword({
                 email: document.getElementById('loginEmail').value,
-                password: document.getElementById('loginPass').value
+                password: document.getElementById('loginPass').value,
             });
-            if (error) alert("Failed: " + error.message);
+            if (error) alert("Login Failed: " + error.message);
         });
+
+        // 4. Send Reset Email
+        async function sendResetEmail() {
+            const email = document.getElementById('loginEmail').value;
+            if(!email) return alert("Please enter your email address above first.");
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.href
+            });
+            if(error) alert(error.message);
+            else alert("Password reset email sent! Check inbox.");
+        }
+
+        // 5. Update Password
+        async function updateUserPassword() {
+            const newPassword = document.getElementById('newPass').value;
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if(error) alert(error.message);
+            else {
+                alert("Password updated! Logging you in...");
+                window.location.hash = ''; // Clear hash
+                location.reload();
+            }
+        }
+
+        async function logout() { await supabase.auth.signOut(); location.reload(); }
+
+        // --- NAVIGATION & UI ---
 
         function showAdmin() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('admin-sidebar').classList.remove('hidden');
             document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('public-view').classList.add('hidden');
             fetchData();
         }
 
@@ -133,26 +192,103 @@
             fetchData();
         }
 
-        async function fetchData() {
-            const { data: pData } = await supabase.from('products').select('*');
-            const { data: iData } = await supabase.from('inquiries').select('*');
-            render(pData || [], iData || []);
-        }
-
-        function render(products, inquiries) {
-            document.getElementById('stat-count').innerText = products.length;
-            const html = products.map(p => `<div class="bg-white p-6 border rounded-2xl"><b>${p.name}</b><br>$${p.price}</div>`).join('');
-            document.getElementById('public-grid').innerHTML = html;
-            document.getElementById('inventory-list').innerHTML = products.map(p => `<tr class="p-4"><td>${p.name}</td><td class="text-right">$${p.price}</td></tr>`).join('');
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById('tab-' + id).classList.remove('hidden');
+            document.querySelectorAll('aside nav button').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById('nav-' + id).classList.add('tab-active');
+            document.getElementById('tab-title').innerText = id.toUpperCase();
         }
 
         function toggleModal(s) { document.getElementById('uploadModal').classList.toggle('hidden', !s); }
-        async function logout() { await supabase.auth.signOut(); location.reload(); }
 
-        // Recovery check
-        if (window.location.hash.includes('type=recovery')) {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('reset-password-box').classList.remove('hidden');
+        // --- DATA LOGIC ---
+
+        async function fetchData() {
+            const { data: pData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+            const { data: iData } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false });
+            products = pData || [];
+            inquiries = iData || [];
+            renderAll();
+        }
+
+        async function addProduct(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('products').insert([{
+                name: document.getElementById('pName').value,
+                brand: document.getElementById('pBrand').value,
+                category: document.getElementById('pCategory').value,
+                price: parseFloat(document.getElementById('pPrice').value)
+            }]);
+            if (!error) { toggleModal(false); document.getElementById('productForm').reset(); fetchData(); }
+            else alert("Database Error: Check Policy");
+        }
+        document.getElementById('productForm').addEventListener('submit', addProduct);
+
+        async function deleteItem(id) {
+            if(confirm("Delete this hardware SKU?")) {
+                await supabase.from('products').delete().eq('id', id);
+                fetchData();
+            }
+        }
+
+        async function sendInquiry(name) {
+            const cName = prompt("Name:");
+            const cPhone = prompt("Phone:");
+            if(cName && cPhone) {
+                await supabase.from('inquiries').insert([{ product_name: name, customer_name: cName, customer_phone: cPhone }]);
+                alert("Quote request sent!");
+                fetchData();
+            }
+        }
+
+        function renderAll() {
+            // Stats
+            document.getElementById('stat-count').innerText = products.length;
+            document.getElementById('stat-inq').innerText = inquiries.length;
+
+            // Inventory List
+            const inventoryHtml = products.map(p => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-4 font-bold text-slate-800">${p.name}</td>
+                    <td class="p-4 text-slate-400 font-bold text-[10px]">${p.brand}</td>
+                    <td class="p-4 font-bold text-blue-600">$${p.price}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteItem(${p.id})" class="text-red-300 hover:text-red-600"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`).join('');
+            document.getElementById('inventory-list').innerHTML = inventoryHtml;
+
+            // Recent List
+            document.getElementById('recent-list').innerHTML = products.slice(0, 5).map(p => `
+                <tr class="p-4 border-b">
+                    <td><div class="p-4"><b>${p.brand}</b> ${p.name}</div></td>
+                    <td class="text-right p-4 text-xs text-slate-400">${new Date(p.created_at).toLocaleDateString()}</td>
+                </tr>`).join('');
+
+            // Store Grids (Admin Preview & Public)
+            const storeHtml = products.map(p => `
+                <div class="bg-white border p-6 rounded-3xl shadow-sm hover:shadow-xl transition relative">
+                    <span class="absolute top-4 right-4 text-[9px] font-black text-blue-500 uppercase">${p.brand}</span>
+                    <div class="h-32 bg-slate-50 rounded-2xl mb-4 flex items-center justify-center text-slate-200 text-4xl">
+                        <i class="fas ${p.category === 'IP Cameras' ? 'fa-video' : 'fa-network-wired'}"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800">${p.name}</h3>
+                    <div class="flex justify-between items-center mt-6">
+                        <span class="text-xl font-black">$${p.price}</span>
+                        <button onclick="sendInquiry('${p.name}')" class="bg-slate-900 text-white text-[10px] px-4 py-2 rounded-xl font-bold uppercase tracking-widest">Inquire</button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('admin-store-grid').innerHTML = storeHtml;
+            document.getElementById('public-grid').innerHTML = storeHtml;
+
+            // Inquiries List
+            document.getElementById('inquiry-list').innerHTML = inquiries.map(i => `
+                <div class="bg-white p-5 rounded-2xl border flex justify-between items-center">
+                    <div><h4 class="font-black">${i.product_name}</h4><p class="text-sm text-slate-500">${i.customer_name} | ${i.customer_phone}</p></div>
+                    <div class="text-[10px] text-slate-300">${new Date(i.created_at).toLocaleString()}</div>
+                </div>`).join('');
         }
     </script>
 </body>
